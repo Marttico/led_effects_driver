@@ -5,6 +5,8 @@
 
 #define ReturnOnUninitialized() if(led_strip == NULL){ESP_LOGE(TAG,"led_effects_driver has not been initialized yet!");return ESP_FAIL;}
 
+led_pixel_t** led_strip_arr;
+
 esp_err_t init_led_effects_driver(int gpio_pin,int led_amt,int input_fps){
     ESP_LOGI(TAG,"Initializing led_effects_driver");
 
