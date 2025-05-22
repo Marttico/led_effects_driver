@@ -3,9 +3,19 @@
 
 #define TAG "led_effects_driver"
 
-#define ReturnOnUninitialized() if(led_strip == NULL){ESP_LOGE(TAG,"led_effects_driver has not been initialized yet!");return ESP_FAIL;}
-
+led_strip_handle_t led_strip_handle;
+uint32_t led_amount;
+uint8_t brightness;
+uint8_t fps;
+TaskHandle_t xLedTaskHandle = NULL;
 led_pixel_t** led_strip_arr;
+
+
+#define ReturnOnUninitialized() if(led_strip_handle == NULL){ESP_LOGE(TAG,"led_effects_driver has not been initialized yet!");return ESP_FAIL;}
+
+
+
+
 
 esp_err_t init_led_effects_driver(int gpio_pin,int led_amt,int input_fps){
     ESP_LOGI(TAG,"Initializing led_effects_driver");
@@ -42,7 +52,7 @@ esp_err_t init_led_effects_driver(int gpio_pin,int led_amt,int input_fps){
         }
     };
 
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip_handle));
 
     led_strip_arr = (led_pixel_t**)malloc(sizeof(led_pixel_t*)*led_amount);
 
@@ -87,12 +97,15 @@ void led_manager_trigger_handler(void* arg){
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(1000/fps));
         xLastWakeTime = xTaskGetTickCount();
         
+
+        process_led_effects_queue(led_strip_arr,ticknumber);
+
         // SIMPLE LED TEST, DO NOT USE
         for(int i = 0; i < led_amount; i++){
             int currentLED = (ticknumber%led_amount) == i;
-            led_strip_set_pixel(led_strip, i, currentLED*255, currentLED*255, currentLED*255);
+            led_strip_set_pixel(led_strip_handle, i, currentLED*255, currentLED*255, currentLED*255);
         }
-        led_strip_refresh(led_strip);
+        led_strip_refresh(led_strip_handle);
 
 
         ticknumber++;
