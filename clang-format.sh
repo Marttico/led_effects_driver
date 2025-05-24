@@ -1,0 +1,1 @@
+clang-format -i components/led_effects_driver/**/*.*pp  --style="{IndentWidth: 4}"
