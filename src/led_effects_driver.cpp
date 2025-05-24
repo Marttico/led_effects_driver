@@ -158,8 +158,6 @@ void led_wave_right::processAnimation(std::vector<led_pixel_t> &strip) {
             strip[i].red = std::max((uint32_t)red, strip[i].red);
             strip[i].green = std::max((uint32_t)green, strip[i].green);
             strip[i].blue = std::max((uint32_t)blue, strip[i].blue);
-        } else {
-            strip[i].red = strip[i].green = strip[i].blue = 0;
         }
     }
     current_time++;
@@ -174,8 +172,6 @@ void led_wave_left::processAnimation(std::vector<led_pixel_t> &strip) {
             strip[i].red = std::max((uint32_t)red, strip[i].red);
             strip[i].green = std::max((uint32_t)green, strip[i].green);
             strip[i].blue = std::max((uint32_t)blue, strip[i].blue);
-        } else {
-            strip[i].red = strip[i].green = strip[i].blue = 0;
         }
     }
     current_time++;
@@ -196,20 +192,22 @@ void led_heartbeats::processAnimation(std::vector<led_pixel_t> &strip) {
 
     // float intensity = calc_intensity_diff((float)current_time/2);
 
-    float intensity =   calc_intensity(heartbeat_length,current_time) + 
-                        calc_intensity(heartbeat_length,current_time-25) +
-                        calc_intensity(heartbeat_length,current_time-75) +
-                        calc_intensity(heartbeat_length,current_time-100); 
+    float intensity =   calc_intensity(heartbeat_length*0.5,current_time) + 
+                        calc_intensity(heartbeat_length*0.5,current_time-(heartbeat_length)) +
+                        calc_intensity(heartbeat_length*0.5,current_time-(heartbeat_length+50)) +
+                        calc_intensity(heartbeat_length*0.5,current_time-(heartbeat_length*2+50)); 
 
 
 
 
     for (int i = 0; i < led_amount; i++) {
-        float sideintensity = 1-abs(i-((float)led_amount/2))*(1/((float)led_amount)*0.7);
+        ESP_LOGI(TAG,"%f",intensity);
+        // float sideintensity = 1-abs(i-((float)led_amount/2))*(1/((float)led_amount)*0.7);
+        float sideintensity = -(1/(intensity*16)) * std::pow(i-((float)led_amount/2),2) + 1;
 
-        strip[i].red = std::max((uint32_t)(red*intensity*sideintensity), strip[i].red);
-        strip[i].green = std::max((uint32_t)(green*intensity*sideintensity), strip[i].green);
-        strip[i].blue = std::max((uint32_t)(blue*intensity*sideintensity), strip[i].blue);
+        strip[i].red = std::max((uint32_t)(red*sideintensity), strip[i].red);
+        strip[i].green = std::max((uint32_t)(green*sideintensity), strip[i].green);
+        strip[i].blue = std::max((uint32_t)(blue*sideintensity), strip[i].blue);
 
     }
     current_time++;
