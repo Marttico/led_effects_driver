@@ -10,5 +10,5 @@ set(priv_requires led_strip libpng)
 idf_component_register(SRCS ${srcs}
                        INCLUDE_DIRS ${public_include}
                        PRIV_REQUIRES ${priv_requires}
-                       EMBED_FILES "png/testpattern.png" "png/wave.png"
+                       EMBED_FILES "png/testpattern.png" "png/wave.png" "png/love.png"
                       )
