@@ -105,3 +105,13 @@ void led_trigger_animation(std::unique_ptr<led_animation> entry);
   is empty, suspend task.
 
 */
+
+extern const uint8_t led_testpattern_start[] asm("_binary_testpattern_png_start");
+extern const uint8_t led_testpattern_end[]   asm("_binary_testpattern_png_end");
+
+extern const uint8_t led_wave_start[] asm("_binary_wave_png_start");
+extern const uint8_t led_wave_end[]   asm("_binary_wave_png_end");
+
+extern const uint8_t led_love_start[] asm("_binary_love_png_start");
+extern const uint8_t led_love_end[]   asm("_binary_love_png_end");
+
