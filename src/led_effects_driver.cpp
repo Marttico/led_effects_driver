@@ -8,7 +8,10 @@ uint8_t brightness;
 uint8_t fps;
 TaskHandle_t xLedTaskHandle = NULL;
 
+SemaphoreHandle_t led_semaphore = NULL;
+
 std::vector<led_pixel_t> led_vector;
+std::vector<led_pixel_t> led_vector_perm;
 std::vector<std::unique_ptr<led_animation>> animation_queue;
 
 led_strip_handle_t led_strip_handle = NULL;
@@ -25,6 +28,8 @@ esp_err_t init_led_effects_driver(int gpio_pin, int led_amt) {
 
 esp_err_t init_led_effects_driver(int gpio_pin, int led_amt, uint8_t b) {
     ESP_LOGI(TAG, "Initializing led_effects_driver");
+
+    led_semaphore = xSemaphoreCreateMutex();
 
     fps = 50;
 
@@ -60,12 +65,35 @@ esp_err_t init_led_effects_driver(int gpio_pin, int led_amt, uint8_t b) {
         p.red = p.green = p.blue = 0;
     }
 
+    led_vector_perm.resize(led_amount);
+    for (auto &p : led_vector_perm) {
+        p.red = p.green = p.blue = 0;
+    }
+
     xTaskCreate(led_manager_trigger_handler, "LED_MANAGER_TASK", 2048*4, NULL,
                 NULL, &xLedTaskHandle);
 
     return ESP_OK;
 }
 
+esp_err_t led_clear_everything(){
+    xSemaphoreTake(led_semaphore, portMAX_DELAY);
+    animation_queue.clear();
+    
+    led_vector.resize(led_amount);
+    for (auto &p : led_vector) {
+        p.red = p.green = p.blue = 0;
+    }
+
+    led_vector_perm.resize(led_amount);
+    for (auto &p : led_vector_perm) {
+        p.red = p.green = p.blue = 0;
+    }
+
+    xSemaphoreGive(led_semaphore);
+    
+    return ESP_OK;
+}
 
 void led_manager_trigger_handler(void *arg) {
     TickType_t xLastWakeTime;
@@ -76,7 +104,10 @@ void led_manager_trigger_handler(void *arg) {
     for (;;) {
 
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(1000 / fps));
+
         xLastWakeTime = xTaskGetTickCount();
+
+        xSemaphoreTake(led_semaphore, portMAX_DELAY);
 
         for (int i = 0; i < led_amount; i++) {
             led_vector[i].red = 0;
@@ -94,6 +125,13 @@ void led_manager_trigger_handler(void *arg) {
             }
         }
 
+        // Add permanent vector to led_vector
+        for (int i = 0; i < led_amount; i++) {
+            led_vector[i].red = std::max(led_vector_perm[i].red, led_vector[i].red);
+            led_vector[i].green = std::max(led_vector_perm[i].green, led_vector[i].green);
+            led_vector[i].blue = std::max(led_vector_perm[i].green, led_vector[i].blue);
+        }
+
         for (int i = 0; i < led_amount; i++) {
             esp_err_t err = led_strip_set_pixel(
                 led_strip_handle, i,
@@ -103,11 +141,22 @@ void led_manager_trigger_handler(void *arg) {
         }
 
         led_strip_refresh(led_strip_handle);
+
+        xSemaphoreGive(led_semaphore);
     }
 }
 
+// Set LED to permanent
+void led_set_global_vector(int i, uint8_t r, uint8_t g, uint8_t b){
+    xSemaphoreTake(led_semaphore, portMAX_DELAY);
+    led_vector_perm[i].red = r;
+    led_vector_perm[i].green = g;
+    led_vector_perm[i].blue = b;
+    xSemaphoreGive(led_semaphore);
+}
+
 // Add led effect to animation queue.
-void trigger_animation(std::unique_ptr<led_animation> ptr) {
+void led_trigger_animation(std::unique_ptr<led_animation> ptr) {
     animation_queue.push_back(std::move(ptr));
 }
 
@@ -232,6 +281,4 @@ void led_png_animation::processAnimation(std::vector<led_pixel_t> &strip) {
     
     }
     current_time++;
-    
-    ESP_LOGI(TAG,"YOO");
 }
