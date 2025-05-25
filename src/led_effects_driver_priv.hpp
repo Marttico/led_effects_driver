@@ -1,6 +1,7 @@
 
 #include "esp_check.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "led_strip.h"
 #include <algorithm>

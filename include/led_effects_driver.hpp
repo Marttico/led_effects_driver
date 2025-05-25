@@ -82,12 +82,22 @@ class led_png_animation : public led_animation {
     void processAnimation(std::vector<led_pixel_t> &strip) override;
 };
 
+void led_set_global_vector(int i, uint8_t r, uint8_t g, uint8_t b);
 
 esp_err_t init_led_effects_driver(int gpio_pin, int led_amt);
 
 esp_err_t init_led_effects_driver(int gpio_pin, int led_amt, uint8_t b);
 
-void trigger_animation(std::unique_ptr<led_animation> entry);
+esp_err_t led_clear_everything();
+
+/*
+Example:
+- led_trigger_animation(std::make_unique<led_heartbeats>(25, 251, 111, 146));
+- led_trigger_animation(std::make_unique<led_png_animation>(love_start,love_end));
+
+
+*/
+void led_trigger_animation(std::unique_ptr<led_animation> entry);
 
 /*Idea of this led driver is to calculate all the brightnesses and colors of
   LEDs before actually applying them. This way multiple animations can be shown
