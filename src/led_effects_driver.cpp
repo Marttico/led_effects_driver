@@ -60,7 +60,7 @@ esp_err_t init_led_effects_driver(int gpio_pin, int led_amt, uint8_t b) {
         p.red = p.green = p.blue = 0;
     }
 
-    xTaskCreate(led_manager_trigger_handler, "LED_MANAGER_TASK", 2048, NULL,
+    xTaskCreate(led_manager_trigger_handler, "LED_MANAGER_TASK", 2048*4, NULL,
                 NULL, &xLedTaskHandle);
 
     return ESP_OK;
@@ -201,7 +201,6 @@ void led_heartbeats::processAnimation(std::vector<led_pixel_t> &strip) {
 
 
     for (int i = 0; i < led_amount; i++) {
-        ESP_LOGI(TAG,"%f",intensity);
         // float sideintensity = 1-abs(i-((float)led_amount/2))*(1/((float)led_amount)*0.7);
         float sideintensity = -(1/(intensity*16)) * std::pow(i-((float)led_amount/2),2) + 1;
 
@@ -211,4 +210,28 @@ void led_heartbeats::processAnimation(std::vector<led_pixel_t> &strip) {
 
     }
     current_time++;
+}
+
+led_png_animation::led_png_animation(const uint8_t *png_data_start, const uint8_t *png_data_end) : led_animation(10), p(png_data_start, png_data_end){
+    set_time_length((uint32_t)p.getHeight());
+}
+
+
+void led_png_animation::processAnimation(std::vector<led_pixel_t> &strip) {
+    if(p.getWidth() != led_amount){
+        return;
+    }
+
+    for (int i = 0; i < led_amount; i++) {
+        
+        uint8_t r,g,b;
+        p.readPixel(i,current_time,r,g,b);
+        strip[i].red = std::max((uint32_t)r, strip[i].red);
+        strip[i].green = std::max((uint32_t)g, strip[i].green);
+        strip[i].blue = std::max((uint32_t)b, strip[i].blue);
+    
+    }
+    current_time++;
+    
+    ESP_LOGI(TAG,"YOO");
 }
