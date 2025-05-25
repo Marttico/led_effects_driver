@@ -4,6 +4,7 @@
 #include <memory>
 #include <sys/time.h>
 #include <vector>
+#include "png_loader.hpp"
 
 
 
@@ -23,6 +24,7 @@ class led_animation {
     int64_t getTimeLeft() {
         return led_animation::time_length - led_animation::current_time;
     };
+    void set_time_length(uint32_t t_l){time_length = t_l;};
     virtual void processAnimation(std::vector<led_pixel_t> &strip) = 0;
 };
 
@@ -69,6 +71,14 @@ class led_heartbeats : public led_animation {
 
   public:
   led_heartbeats(uint16_t hb_length, uint8_t r, uint8_t g, uint8_t b);
+    void processAnimation(std::vector<led_pixel_t> &strip) override;
+};
+
+class led_png_animation : public led_animation {
+  private:
+    png_image_led p;
+  public:
+    led_png_animation(const uint8_t *png_data_start, const uint8_t *png_data_end);
     void processAnimation(std::vector<led_pixel_t> &strip) override;
 };
 
