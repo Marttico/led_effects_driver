@@ -146,6 +146,10 @@ void led_manager_trigger_handler(void *arg) {
     }
 }
 
+void led_set_brightness(uint8_t b){
+    brightness = b;
+}
+
 // Set LED to permanent
 void led_set_global_vector(int i, uint8_t r, uint8_t g, uint8_t b){
     xSemaphoreTake(led_semaphore, portMAX_DELAY);
