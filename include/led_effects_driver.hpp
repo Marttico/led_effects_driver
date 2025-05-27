@@ -137,3 +137,6 @@ extern const uint8_t led_startup_end[]   asm("_binary_startup_png_end");
 
 extern const uint8_t led_settingsmenu_start[] asm("_binary_settingsmenu_png_start");
 extern const uint8_t led_settingsmenu_end[]   asm("_binary_settingsmenu_png_end");
+
+extern const uint8_t led_love_sending_start[] asm("_binary_love_sending_png_start");
+extern const uint8_t led_love_sending_end[]   asm("_binary_love_sending_png_end");
