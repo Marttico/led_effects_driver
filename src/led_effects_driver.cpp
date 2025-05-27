@@ -152,7 +152,7 @@ void led_set_brightness(uint8_t b){
 
 // Set LED to permanent
 void led_set_global_vector(int i, uint8_t r, uint8_t g, uint8_t b){
-    xSemaphoreTake(led_semaphore, portMAX_DELAY);
+    xSemaphoreTake(led_semaphore, portTICK_PERIOD_MS);
     led_vector_perm[i].red = r;
     led_vector_perm[i].green = g;
     led_vector_perm[i].blue = b;
@@ -278,11 +278,40 @@ void led_png_animation::processAnimation(std::vector<led_pixel_t> &strip) {
     for (int i = 0; i < led_amount; i++) {
         
         uint8_t r,g,b;
-        p.readPixel(i,current_time,r,g,b);
+        p.readPixel((led_amount-1)-i,current_time,r,g,b);
         strip[i].red = std::max((uint32_t)r, strip[i].red);
         strip[i].green = std::max((uint32_t)g, strip[i].green);
         strip[i].blue = std::max((uint32_t)b, strip[i].blue);
     
     }
     current_time++;
+}
+
+
+led_png_loop_animation::led_png_loop_animation(const uint8_t *png_data_start, const uint8_t *png_data_end) : led_animation(10), p(png_data_start, png_data_end){
+    set_time_length((uint32_t)p.getHeight());
+}
+
+
+void led_png_loop_animation::processAnimation(std::vector<led_pixel_t> &strip) {
+    if(p.getWidth() != led_amount){
+        return;
+    }
+
+    for (int i = 0; i < led_amount; i++) {
+        
+        uint8_t r,g,b;
+        p.readPixel((led_amount-1)-i,current_time,r,g,b);
+        strip[i].red = std::max((uint32_t)r, strip[i].red);
+        strip[i].green = std::max((uint32_t)g, strip[i].green);
+        strip[i].blue = std::max((uint32_t)b, strip[i].blue);
+    
+    }
+    
+    current_time++;
+
+    if(current_time == time_length){
+        current_time = 0;
+    }
+
 }
