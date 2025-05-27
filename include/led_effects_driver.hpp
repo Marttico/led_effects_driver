@@ -18,7 +18,6 @@ class led_animation {
   protected:
     uint32_t time_length;
     uint32_t current_time;
-
   public:
     led_animation(uint32_t t_l);
     int64_t getTimeLeft() {
@@ -82,6 +81,14 @@ class led_png_animation : public led_animation {
     void processAnimation(std::vector<led_pixel_t> &strip) override;
 };
 
+class led_png_loop_animation : public led_animation {
+  private:
+    png_image_led p;
+  public:
+    led_png_loop_animation(const uint8_t *png_data_start, const uint8_t *png_data_end);
+    void processAnimation(std::vector<led_pixel_t> &strip) override;
+};
+
 void led_set_global_vector(int i, uint8_t r, uint8_t g, uint8_t b);
 
 void led_set_brightness(uint8_t b);
@@ -100,7 +107,6 @@ Example:
 
 */
 void led_trigger_animation(std::unique_ptr<led_animation> entry);
-
 /*Idea of this led driver is to calculate all the brightnesses and colors of
   LEDs before actually applying them. This way multiple animations can be shown
   at once. Using a queue queue and preset animations this can be done. If queue
@@ -117,3 +123,17 @@ extern const uint8_t led_wave_end[]   asm("_binary_wave_png_end");
 extern const uint8_t led_love_start[] asm("_binary_love_png_start");
 extern const uint8_t led_love_end[]   asm("_binary_love_png_end");
 
+extern const uint8_t led_pairing_start[] asm("_binary_pairing_png_start");
+extern const uint8_t led_pairing_end[]   asm("_binary_pairing_png_end");
+
+extern const uint8_t led_connected_start[] asm("_binary_connected_png_start");
+extern const uint8_t led_connected_end[]   asm("_binary_connected_png_end");
+
+extern const uint8_t led_disconnected_start[] asm("_binary_disconnected_png_start");
+extern const uint8_t led_disconnected_end[]   asm("_binary_disconnected_png_end");
+
+extern const uint8_t led_startup_start[] asm("_binary_startup_png_start");
+extern const uint8_t led_startup_end[]   asm("_binary_startup_png_end");
+
+extern const uint8_t led_settingsmenu_start[] asm("_binary_settingsmenu_png_start");
+extern const uint8_t led_settingsmenu_end[]   asm("_binary_settingsmenu_png_end");
