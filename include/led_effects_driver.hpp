@@ -76,16 +76,21 @@ class led_heartbeats : public led_animation {
 class led_png_animation : public led_animation {
   private:
     png_image_led p;
+    bool looping;
   public:
-    led_png_animation(const uint8_t *png_data_start, const uint8_t *png_data_end);
+    led_png_animation(const uint8_t *png_data_start, const uint8_t *png_data_end,bool looping);
     void processAnimation(std::vector<led_pixel_t> &strip) override;
 };
 
-class led_png_loop_animation : public led_animation {
+class led_png_animation_rgb : public led_animation {
   private:
     png_image_led p;
+    bool looping;
+    uint8_t red; 
+    uint8_t green; 
+    uint8_t blue;
   public:
-    led_png_loop_animation(const uint8_t *png_data_start, const uint8_t *png_data_end);
+    led_png_animation_rgb(const uint8_t *png_data_start, const uint8_t *png_data_end, bool looping_, uint8_t r, uint8_t g, uint8_t b);
     void processAnimation(std::vector<led_pixel_t> &strip) override;
 };
 

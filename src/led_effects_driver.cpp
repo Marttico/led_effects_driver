@@ -265,7 +265,7 @@ void led_heartbeats::processAnimation(std::vector<led_pixel_t> &strip) {
     current_time++;
 }
 
-led_png_animation::led_png_animation(const uint8_t *png_data_start, const uint8_t *png_data_end) : led_animation(10), p(png_data_start, png_data_end){
+led_png_animation::led_png_animation(const uint8_t *png_data_start, const uint8_t *png_data_end, bool looping_) : led_animation(10), p(png_data_start, png_data_end), looping(looping_){
     set_time_length((uint32_t)p.getHeight());
 }
 
@@ -285,15 +285,21 @@ void led_png_animation::processAnimation(std::vector<led_pixel_t> &strip) {
     
     }
     current_time++;
+
+    if(current_time == time_length && looping){
+        current_time = 0;
+    }
 }
 
 
-led_png_loop_animation::led_png_loop_animation(const uint8_t *png_data_start, const uint8_t *png_data_end) : led_animation(10), p(png_data_start, png_data_end){
+
+led_png_animation_rgb::led_png_animation_rgb(const uint8_t *png_data_start, const uint8_t *png_data_end, bool looping_, uint8_t r, uint8_t g, uint8_t b) : 
+led_animation(10), p(png_data_start, png_data_end), looping(looping_), red(r), green(g), blue(b){
     set_time_length((uint32_t)p.getHeight());
 }
 
 
-void led_png_loop_animation::processAnimation(std::vector<led_pixel_t> &strip) {
+void led_png_animation_rgb::processAnimation(std::vector<led_pixel_t> &strip) {
     if(p.getWidth() != led_amount){
         return;
     }
@@ -302,16 +308,14 @@ void led_png_loop_animation::processAnimation(std::vector<led_pixel_t> &strip) {
         
         uint8_t r,g,b;
         p.readPixel((led_amount-1)-i,current_time,r,g,b);
-        strip[i].red = std::max((uint32_t)r, strip[i].red);
-        strip[i].green = std::max((uint32_t)g, strip[i].green);
-        strip[i].blue = std::max((uint32_t)b, strip[i].blue);
+        strip[i].red = std::max((uint32_t)(r*((double)red/256.0)), strip[i].red);
+        strip[i].green = std::max((uint32_t)(g*((double)green/256.0)), strip[i].green);
+        strip[i].blue = std::max((uint32_t)(b*((double)blue/256.0)), strip[i].blue);
     
     }
-    
     current_time++;
 
-    if(current_time == time_length){
+    if(current_time == time_length && looping){
         current_time = 0;
     }
-
 }
